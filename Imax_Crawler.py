@@ -52,6 +52,11 @@ class Crawler:
       urls.append(url)
     return urls
   
+  def _get_tracking_time(self):
+    tracking_time = datetime.now()
+    tracking_time = tracking_time.strftime("%Y-%m-%d %H:%M:%S")
+    return tracking_time
+
   def find_imax(self):
     data = set()
     imaxs_info = []
@@ -69,10 +74,9 @@ class Crawler:
     self.driver.quit()
 
     #추적 날짜에 아이맥스 영화의 정보가 존재한다면
-    #추적 날짜 모두 아이맥스 영화가 존재하지 않을 수 있음
+    ###추적 날짜 모두 아이맥스 영화가 존재하지 않을 수 있음
     if imaxs_info != []:
       for imaxs, date in imaxs_info:
-        #print('추적날짜 : ', date)
         #아이맥스의 정보가 존재한다면
         if len(imaxs)> 0:
           for imax in imaxs:
@@ -88,11 +92,12 @@ class Crawler:
               else:
                 continue
             
-          #imax 영화 날짜와 실제 추적 날짜가 동일하다면
+          #imax 영화 날짜와 추적 날짜가 동일하다면
           #정보를 확인
             if year+month == date[4:]:
               title = col_times.select_one('div.info-movie > a > strong').text.strip() 
-              data.add((int(date), title, False))
+              tracking_date = self._get_tracking_time()
+              data.add((int(date), title, tracking_date))
     data = sorted(list(data),key=lambda x : x[0])
     return data
   # def printtt(self):

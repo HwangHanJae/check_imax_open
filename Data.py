@@ -19,46 +19,32 @@ class DataBase:
   @cursor.getter
   def cursor(self):
     return self.__cursor
-  def _table_exist(self):
-    flag = False
-    try:
-      self.__cursor.execute("""SELECT * FROM MOVIE_INFO
-      """)
-      flag =True
-      return flag
-    except:
-      flag = False
-      return flag
 
   def create_table(self):
-    sql = """CREATE TABLE MOVIE_INFO (
+    """
+    MOVIE_INFO 테이블 CREATE 함수
+    """
+    sql = """CREATE TABLE IF NOT EXISTS MOVIE_INFO (
       id serial PRIMARY KEY,
-      movie_date VARCHAR(8) NOT NULL,
+      movie_open_date text NOT NULL,
       title text NOT NULL,
-      flag boolean NOT NULL);"""
-    if self._table_exist():
-      pass
-    else:
-      self.__cursor.execute(sql)
-      #self.__cursor.close()
-      self.__conn.commit()
+      tracking_time text NOT NULL);"""
+    self.__cursor.execute(sql)
+    self.__conn.commit()
       
   def insert_data(self, data):
-    insert_sql  = """INSERT INTO MOVIE_INFO (movie_date, title, flag) VALUES(%s, %s, %s);"""
-    select_sql = """SELECT movie_date, title, flag
-                    FROM MOVIE_INFO
-                    WHERE movie_date = %s and title = %s;"""
+    insert_sql  = """INSERT INTO MOVIE_INFO (movie_open_date, title, tracking_time) VALUES(%s, %s, %s);"""
+    # select_sql = """SELECT *
+    #                 FROM MOVIE_INFO
+    #                 WHERE movie_open_date = %s and title = %s;"""
     try:
-      for i in range(len(data)):
-        date = data[i][0]
-        title = data[i][1]
-        flag = data[i][2]
-        self.__cursor.execute(select_sql, (str(date), title))
-        rows = self.__cursor.fetchall()
-        if rows == []:
-          self.__cursor.execute(insert_sql, (str(date), title, flag))
-        else:
-          continue
+      movie_open_date = data[0]
+      title = data[1]
+      tracking_time = data[2]
+      # self.__cursor.execute(select_sql, (str(movie_open_date), title))
+      # rows = self.__cursor.fetchall()
+      # if rows == []:
+      self.__cursor.execute(insert_sql, (str(movie_open_date), title, tracking_time))  
       self.__conn.commit()
     except Exception as error:
       print("Error in Insert Data Transaction", error)
@@ -71,24 +57,46 @@ class DataBase:
     rows = self.__cursor.fetchall()
     if rows == []:
       print('clear 완료')
-      #self.__cursor.close()
       self.__conn.commit()
     else:
       print('오류 발생')
       self.__conn.rollback()
-  def select_table(self):
-    select_sql = """SELECT * FROM MOVIE_INFO"""
-    self.__cursor.execute(select_sql)
+
+  def check_data(self, data):
+    """
+    입력받은 데이터가 데이터베이스에 존재하는지 확인
+    """
+    movie_open_date = data[0]
+    title = data[1]
+    select_sql = """SELECT movie_open_date, title FROM MOVIE_INFO
+                    WHERE movie_open_date = %s and title = %s"""
+    self.__cursor.execute(select_sql, (str(movie_open_date), title))
     rows = self.__cursor.fetchall()
     for row in rows:
-      print(row)
-      
-postgre = DataBase()
-data1 = [(20220209, 'title1', False),(20220210, 'title2', False)]
-data2 = [(20220211, 'title3', False)]
-postgre.create_table()
-postgre.insert_data(data1)
-postgre.insert_data(data2)
-postgre.select_table()
-postgre.clear_table()
-postgre.select_table()
+      if row:
+        return True
+    return False
+  def drop_table(self):
+    sql = """DROP TABLE IF EXISTS MOVIE_INFO"""
+    self.__cursor.execute(sql)
+    self.__conn.commit()
+    print('DROP TABLE 완료')
+  
+
+def input_test(postgre, datas):
+  for data in datas:
+    flag = postgre.check_data(data)
+    if flag:
+      print(f'{data[0]}, {data[1]} 데이터가 이미 존재하여 입력할 수 없습니다.')
+      continue
+    else:
+      postgre.insert_data(data)
+
+# postgre = DataBase()
+# data1 = [(20220209, 'title1', "2022-02-09 17:54:23"),(20220210, 'title2',"2022-02-09 17:54:23"), (20220211, 'title3',"2022-02-09 17:54:23")]
+# data2 = [(20220211, 'title3',"2022-02-09 17:53:23")]
+# postgre.create_table()
+# input_test(postgre, data1)
+# input_test(postgre, data2)
+# postgre.clear_table()
+# postgre.drop_table()
