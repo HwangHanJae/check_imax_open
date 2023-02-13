@@ -92,11 +92,11 @@ def input_test(postgre, datas):
     else:
       postgre.insert_data(data)
 
-# postgre = DataBase()
+#postgre = DataBase()
 # data1 = [(20220209, 'title1', "2022-02-09 17:54:23"),(20220210, 'title2',"2022-02-09 17:54:23"), (20220211, 'title3',"2022-02-09 17:54:23")]
 # data2 = [(20220211, 'title3',"2022-02-09 17:53:23")]
 # postgre.create_table()
 # input_test(postgre, data1)
 # input_test(postgre, data2)
-# postgre.clear_table()
-# postgre.drop_table()
+#postgre.clear_table()
+#postgre.drop_table()

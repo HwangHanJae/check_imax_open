@@ -4,7 +4,7 @@ import key
 class MessageBot:
   def __init__(self):
     self.__token = key.TOKEN
-    self.__id = key.ID
+    self.__id = key.CHAT_ID
     self._bot = telegram.Bot(token = self.__token)
 
   @property
@@ -29,5 +29,5 @@ class MessageBot:
 # bot = MessageBot()
 # print('chat id is : ', bot.id)
 # print("token is : ", bot.token)
-# bot.test_send_msg()
 
+# bot.test_send_msg()
