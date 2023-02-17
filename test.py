@@ -1,8 +1,11 @@
-from datetime import datetime
+from pprint import pprint
 
-tracking_time = datetime.now()
-tracking_time = tracking_time.strftime("%Y-%m-%d %H:%M:%S")
-if datetime.now().hour in range(10, 22):
-  print(datetime.now().hour)
-  
-else:print('aa')
+data = [(20230217, 'title', '2023-02-17 18:20:02'),
+ (20230218, 'title2', '2023-02-17 18:20:03'),
+ (20230219, 'title3', '2023-02-17 18:20:03'),
+ (20230220, 'title4', '2023-02-17 18:20:03')]
+
+
+print(data)
+print()
+pprint(data)

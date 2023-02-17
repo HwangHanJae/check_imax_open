@@ -5,6 +5,10 @@ __pycache__/
 
 .vscode/
 
+driver/
+
+chromedriver/
+
 key.py
 
 *.log

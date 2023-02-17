@@ -1,18 +1,27 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.firefox.options import Options
 from datetime import datetime, timedelta
-
+import time
 class Crawler:
   def __init__(self, check_days):
     self.check_days = check_days
     options = Options()
     options.headless = True
-    self.driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=options)
+    self.driver = webdriver.Firefox(executable_path='driver/geckodriver.exe',options=options)
+    #self.driver = self._proxy('127.0.0.1', 9150)
     self.dates = self._get_dates()
     self.urls = self._get_urls()
-    
+  def _proxy(self, HOST, PORT):
+    profile = webdriver.FirefoxProfile()
+    profile.set_preference('network.proxy.type', 1)
+    profile.set_preference('network.proxy.socks', HOST)
+    profile.set_preference('network.proxy.socks_port', PORT)
+    profile.update_preferences()
+    options = Options()
+    options.headless = True
+    driver = webdriver.Firefox(executable_path='driver/geckodriver.exe', options=options, firefox_profile=profile)
+    return driver
   def _get_dates(self):
     """
     추적해야할 날짜 정보를 받아오는 함수
@@ -60,15 +69,17 @@ class Crawler:
   def find_imax(self):
     data = set()
     imaxs_info = []
+    titles = []
     for url, date in zip(self.urls, self.dates):
       self.driver.get(url)
       self.driver.implicitly_wait(1)
+      time.sleep(3)
       self.driver.switch_to.frame('ifrm_movie_time_table')
       iframe = self.driver.page_source
 
       soup = BeautifulSoup(iframe, 'html.parser')
       imaxs = soup.select('span.imax')
-      
+      titles.append(soup.title)
       imaxs_info.append((imaxs, date))
     self.driver.close()
     self.driver.quit()
@@ -99,7 +110,7 @@ class Crawler:
               tracking_date = self._get_tracking_time()
               data.add((int(date), title, tracking_date))
     data = sorted(list(data),key=lambda x : x[0])
-    return data
+    return data, titles
   # def printtt(self):
   #   imaxs = self._find_imax()
   #   return imaxs

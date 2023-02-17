@@ -5,6 +5,7 @@ class MessageBot:
   def __init__(self):
     self.__token = key.TOKEN
     self.__id = key.CHAT_ID
+    self.__debug_id = key.ID
     self._bot = telegram.Bot(token = self.__token)
 
   @property
@@ -21,7 +22,7 @@ class MessageBot:
     return self.__token
 
   def test_send_msg(self):
-    self._bot.send_message(chat_id = self.__id, text = '테스트 메시지 입니다.')
+    self._bot.send_message(chat_id = self.__debug_id, text = '테스트 메시지 입니다.')
 
   def send_msg(self, send_text):
     self._bot.send_message(chat_id = self.__id, text = send_text)
