@@ -23,7 +23,7 @@ def find(urls):
   for url in urls:
     driver.get(url)
     driver.implicitly_wait(1)
-    #time.sleep(3)
+    time.sleep(1)
     driver.switch_to.frame('ifrm_movie_time_table')
     iframe = driver.page_source
 
@@ -37,18 +37,21 @@ def find(urls):
 #soup.title이 None이라면 ifrm_movie_time_table이 등장하지 않은것
 #IP가 차단당했다고 봐도 괜찮음
 print("최초 실행 시간 : ", datetime.now())
-sleep_time = 60
+sleep_time = 0
+count = 0
 while True:
   start = datetime.now()
   data = find(urls)
+  count += len(data)
   if None in data:
     print('date의 크기 : ', len(dates))
     print('sleep time : ', sleep_time)
+    print(f'total browser count : {count}')
     print("IP 차단 당함")
     sys.exit()
-
   print('date의 크기 : ', len(dates))
   print('sleep time : ', sleep_time)
+  print(f'total browser count : {count}')
   print("OK")
   end = datetime.now()
   print("시간 : ", end-start)

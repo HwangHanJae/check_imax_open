@@ -12,3 +12,5 @@ chromedriver/
 key.py
 
 *.log
+
+Imax_Scraping.py
