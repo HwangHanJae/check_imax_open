@@ -1,60 +1,53 @@
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-import time
-import sys
+from Message import MessageBot
+from Imax_Scraping import Scrapper
+from Data import DataBase
 from datetime import datetime
+import time
+from selenium.common.exceptions import NoSuchElementException
+import time
 
-urls = []
-dates = [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+bot = MessageBot()
+postgre = DataBase()
+postgre.create_table()
+print("최초 실행 시간 : ", str(datetime.now()))
 
-for date in dates:
-  #왕십리 cgv url
-  url = f'http://www.cgv.co.kr/theaters/?areacode=01&theaterCode=0074&date=202302{str(date)}'
-  #url = f'https://www.cgv.co.kr/theaters/?areacode=01&theaterCode=0013&date=202302{str(date)}'
-  urls.append(url)
+scrapper = Scrapper('Wangsimni')
+scrapper.setting()
 
-def find(urls):
-
-  options = Options()
-  options.headless = True
-  driver = webdriver.Firefox(executable_path='driver/geckodriver.exe',options=options)
-  data = []
-  for url in urls:
-    driver.get(url)
-    driver.implicitly_wait(1)
-    time.sleep(1)
-    driver.switch_to.frame('ifrm_movie_time_table')
-    iframe = driver.page_source
-
-    soup = BeautifulSoup(iframe, 'html.parser')
-    data.append(soup.title)
-  driver.close()
-  driver.quit()
-
-  return data
-
-#soup.title이 None이라면 ifrm_movie_time_table이 등장하지 않은것
-#IP가 차단당했다고 봐도 괜찮음
-print("최초 실행 시간 : ", datetime.now())
-sleep_time = 0
 count = 0
+div_number = 1
+li_number = 1
 while True:
-  start = datetime.now()
-  data = find(urls)
-  count += len(data)
-  if None in data:
-    print('date의 크기 : ', len(dates))
-    print('sleep time : ', sleep_time)
-    print(f'total browser count : {count}')
-    print("IP 차단 당함")
-    sys.exit()
-  print('date의 크기 : ', len(dates))
-  print('sleep time : ', sleep_time)
-  print(f'total browser count : {count}')
-  print("OK")
-  end = datetime.now()
-  print("시간 : ", end-start)
-  time.sleep(sleep_time)
-  
-  
+  if li_number == 9:
+    scrapper.click_next_btn()
+    li_number = 1
+    div_number += 1
+  try:
+    time.sleep(1)
+    movie_info, cgv_title = scrapper.find_imax(div_number, li_number)
+    #cgv_title을 못 받아왔단 의미는 IP차단 당했다는 의미
+    if cgv_title == None:
+      print("IP차단")
+      print('count : ', count)
+      break
+    else:
+      for data in movie_info:
+        #이미 데이터가 존재하면 다음 데이터로 넘어감
+        if postgre.check_data(data):
+          continue
+        else:
+          send_text = f'{data[3]} 영화관에 {data[0]}, {data[1]} 영화가 오픈하였습니다.'
+          #텔레그램 알림톡 전송
+          bot.send_msg(send_text = send_text)
+          #데이터 베이스 추가
+          postgre.insert_data(data)
+    time.sleep(1)
+    count +=1
+  #오픈되지 않은 날짜 확인시
+  except NoSuchElementException as e:
+    scrapper.click_next_btn()
+    div_number = 1
+    li_number = 0
+  li_number += 1
+
+

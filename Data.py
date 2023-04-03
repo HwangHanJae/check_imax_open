@@ -28,12 +28,13 @@ class DataBase:
       id serial PRIMARY KEY,
       movie_open_date text NOT NULL,
       title text NOT NULL,
-      tracking_time text NOT NULL);"""
+      tracking_time text NOT NULL,
+      theater text NOT NULL);"""
     self.__cursor.execute(sql)
     self.__conn.commit()
       
   def insert_data(self, data):
-    insert_sql  = """INSERT INTO MOVIE_INFO (movie_open_date, title, tracking_time) VALUES(%s, %s, %s);"""
+    insert_sql  = """INSERT INTO MOVIE_INFO (movie_open_date, title, tracking_time, theater) VALUES(%s, %s, %s, %s);"""
     # select_sql = """SELECT *
     #                 FROM MOVIE_INFO
     #                 WHERE movie_open_date = %s and title = %s;"""
@@ -41,10 +42,11 @@ class DataBase:
       movie_open_date = data[0]
       title = data[1]
       tracking_time = data[2]
+      theater = data[3]
       # self.__cursor.execute(select_sql, (str(movie_open_date), title))
       # rows = self.__cursor.fetchall()
       # if rows == []:
-      self.__cursor.execute(insert_sql, (str(movie_open_date), title, tracking_time))  
+      self.__cursor.execute(insert_sql, (str(movie_open_date), title, tracking_time, theater))  
       self.__conn.commit()
     except Exception as error:
       print("Error in Insert Data Transaction", error)
@@ -68,9 +70,10 @@ class DataBase:
     """
     movie_open_date = data[0]
     title = data[1]
+    theater = data[3]
     select_sql = """SELECT movie_open_date, title FROM MOVIE_INFO
-                    WHERE movie_open_date = %s and title = %s"""
-    self.__cursor.execute(select_sql, (str(movie_open_date), title))
+                    WHERE movie_open_date = %s and title = %s and theater = %s"""
+    self.__cursor.execute(select_sql, (str(movie_open_date), title, theater))
     rows = self.__cursor.fetchall()
     for row in rows:
       if row:
@@ -81,14 +84,18 @@ class DataBase:
     self.__cursor.execute(sql)
     self.__conn.commit()
     print('DROP TABLE 완료')
-  
+  def delete_table(self):
+    sql =  """DELETE FROM MOVIE_INFO"""
+    self.__cursor.execute(sql)
+    self.__conn.commit()
+    print('DELETE TABLE 완료')
 
-def input_test(postgre, datas):
-  for data in datas:
-    flag = postgre.check_data(data)
-    if flag:
-      print(f'{data[0]}, {data[1]} 데이터가 이미 존재하여 입력할 수 없습니다.')
-      continue
-    else:
-      postgre.insert_data(data)
+# def input_test(postgre, datas):
+#   for data in datas:
+#     flag = postgre.check_data(data)
+#     if flag:
+#       print(f'{data[0]}, {data[1]}, {data[3]} 데이터가 이미 존재하여 입력할 수 없습니다.')
+#       continue
+#     else:
+#       postgre.insert_data(data)
 
